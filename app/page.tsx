@@ -82,7 +82,7 @@ export default function Home() {
       </ul>
 
       <p style={{ marginTop: 16, opacity: 0.7 }}>
-        Let op: dit is in-memory. Herstart je dev server en alles is weg. Dat fixen we straks met een database.
+       dit werkt via een database. nice!
       </p>
     </main>
   );
