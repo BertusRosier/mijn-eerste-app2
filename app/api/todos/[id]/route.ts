@@ -2,36 +2,40 @@ import { z } from "zod";
 import { prisma } from "../../../../lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-
 const idSchema = z.coerce.number().int().positive();
+
 const patchSchema = z.object({
   done: z.boolean(),
 });
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Ctx = { params: Promise<{ id: string }> };
+
+export async function PATCH(request: NextRequest, { params }: Ctx) {
   const { id } = await params;
+  const todoId = idSchema.parse(id);
 
-  // jouw bestaande logica hier
+  const body = await request.json().catch(() => null);
+  const data = patchSchema.parse(body);
 
-  return NextResponse.json({ success: true });
+  const updated = await prisma.todo.update({
+    where: { id: todoId },
+    data: { done: data.done },
+  });
+
+  return NextResponse.json(updated);
 }
 
-export async function DELETE(
-  _req: Request,
-  context: { params: { id: string } }
-) {
-  const id = idSchema.parse(context.params.id);
+export async function DELETE(_req: NextRequest, { params }: Ctx) {
+  const { id } = await params;
+  const todoId = idSchema.parse(id);
 
   try {
     await prisma.todo.delete({
-      where: { id },
+      where: { id: todoId },
     });
 
     return new Response(null, { status: 204 });
   } catch {
-    return Response.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 }
