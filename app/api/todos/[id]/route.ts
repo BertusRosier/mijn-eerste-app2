@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { prisma } from "../../../../lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
+
 
 const idSchema = z.coerce.number().int().positive();
 const patchSchema = z.object({
@@ -7,28 +9,14 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(
-  req: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = idSchema.parse(context.params.id);
+  const { id } = await params;
 
-  const body = await req.json().catch(() => ({}));
-  const parsed = patchSchema.safeParse(body);
+  // jouw bestaande logica hier
 
-  if (!parsed.success) {
-    return Response.json({ error: "Invalid input" }, { status: 400 });
-  }
-
-  try {
-    const updated = await prisma.todo.update({
-      where: { id },
-      data: { done: parsed.data.done },
-    });
-
-    return Response.json(updated, { status: 200 });
-  } catch {
-    return Response.json({ error: "Not found" }, { status: 404 });
-  }
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(
